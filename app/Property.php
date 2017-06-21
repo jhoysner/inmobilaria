@@ -12,4 +12,9 @@ class Property extends Model
     protected $fillable = [
         'title', 'description', 'state_id', 'town', 'country', 'address',
     ];
+
+    public function facilities(){
+
+        return $this->belongsToMany('App\Facility');
+    } 
 }

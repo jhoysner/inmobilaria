@@ -4,7 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\State;
-use App\Facilities;
+use App\Facility;
 use App\Property;
 
 class PropiedadesController extends Controller
@@ -29,7 +29,7 @@ class PropiedadesController extends Controller
     {
 
         $states = State::all();
-        $facilities = Facilities::all();
+        $facilities = Facility::all();
         return view('propiedadCreate', compact(['states','facilities']));
 
     }
@@ -45,7 +45,10 @@ class PropiedadesController extends Controller
         // dd($request->all());
         $propiedad = new Property($request->all());
         $propiedad->save();
-        
+
+
+        $propiedad->facilities()->attach($request->facilities);
+
         return redirect()->route('propiedades.index');
 
     }
@@ -69,7 +72,17 @@ class PropiedadesController extends Controller
      */
     public function edit($id)
     {
-        //
+        $propiedad = Property::findOrFail($id);
+        $stateUni = State::findOrFail($propiedad->state_id);
+        $facilitiesUni = State::findOrFail($propiedad->state_id);
+        $states = State::all();
+        $facilities = Facility::all();
+
+        $my_facilities = $propiedad->facilities->pluck('name')->ToArray();
+        
+        return view('propiedadEdit',compact('propiedad','states','stateUni','facilities','my_facilities'));
+
+
     }
 
     /**
@@ -81,7 +94,16 @@ class PropiedadesController extends Controller
      */
     public function update(Request $request, $id)
     {
-        //
+
+        $propiedad = Property::findOrFail($id);
+        if($request->facilities){
+            $propiedad->facilities()->detach();
+        }
+        $propiedad->fill($request->all()); 
+        $propiedad->save(); 
+        $propiedad->facilities()->attach($request->facilities);
+        return redirect()->route('propiedades.index');
+
     }
 
     /**
@@ -92,6 +114,10 @@ class PropiedadesController extends Controller
      */
     public function destroy($id)
     {
-        //
+
+        $propiedad = Property::findOrFail($id);
+        $propiedad->delete();
+        return redirect()->route('propiedades.index');
+
     }
 }
